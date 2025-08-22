@@ -30,6 +30,7 @@ public class ReviewT extends JPanel {
         btnHighestRating = new JButton("Highest Rating");
 
         btnBack = new ReviewT.RoundedButton("Back", 30);
+
         btnBack.setForeground(Color.BLACK);
 
         lblFilter = new JLabel("Filter Reviews");
@@ -170,7 +171,7 @@ public class ReviewT extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
 
         pnlCenter.setLayout(new FlowLayout());
-        pnlSouth.setLayout(new GridLayout(2, 1));
+        pnlSouth.setLayout(new FlowLayout());
         pnlSouth.setForeground(new Color(176, 224, 230));
 
         gbc.fill = GridBagConstraints.HORIZONTAL;
