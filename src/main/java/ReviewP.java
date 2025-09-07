@@ -4,7 +4,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
+import connection.DBConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 public class ReviewP extends JPanel {
@@ -127,29 +131,57 @@ public class ReviewP extends JPanel {
         btnSubmit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(CBOsubjects.getSelectedIndex()==0||CBOtutors.getSelectedIndex()==0|| txtArea.getText().isEmpty()){
+                 if(CBOsubjects.getSelectedIndex()==0||CBOtutors.getSelectedIndex()==0|| txtArea.getText().isEmpty()){
                     JOptionPane.showMessageDialog(null, "Please fill in the missing fields");
-                }
-                else{
+                    return;
+}
+              try( Connection con = DBConnection.derbyConnection()){
+                  int StudentId = 1;
+                  String subjects = CBOsubjects.getSelectedItem().toString();
+                  int SubjectCode = -1;
+                  
+                  PreparedStatement ps1 = con.prepareStatement(
+                "SELECT subject_code FROM Subject WHERE subject_name = ?");
+            ps1.setString(1, subjects);
+            ResultSet rs1 = ps1.executeQuery();
+            if (rs1.next()) {
+                SubjectCode = rs1.getInt("subject_code");
+            }
+            
+                  
+                  String tutors = CBOtutors.getSelectedItem().toString();
+                  int TutorId = -1;
+                   PreparedStatement ps2 = con.prepareStatement(
+                "SELECT tutor_id FROM Tutor WHERE name = ?");
+            ps2.setString(1, tutors);
+            ResultSet rs2 = ps2.executeQuery();
+            if (rs2.next()) {
+                TutorId = rs2.getInt("tutor_id");
+            }
+                  
+                  int Rating = currentRating;
+                  String comments = txtArea.getText();
+                  
+                  PreparedStatement insert = con.prepareStatement(
+                "INSERT INTO Review (student_id, subject_id, tutor_id, rating, comment) VALUES (?, ?, ?, ?, ?)");
+            insert.setInt(1, StudentId);
+            insert.setInt(2, SubjectCode);
+            insert.setInt(3, TutorId);
+            insert.setInt(4, Rating);
+            insert.setString(5, comments);
+
+            int rows = insert.executeUpdate();
+               
+                     
                     //To capture the review data
-                    String subject = CBOsubjects.getSelectedItem().toString();
+                              //Marking this one out because we wanna connect to both the database and the table so we create new arrays at the top
+                  /*  String subject = CBOsubjects.getSelectedItem().toString();
                     String tutor = CBOtutors.getSelectedItem().toString();
                     String comment = txtArea.getText();
-                    int rating = currentRating;
+                    int rating = currentRating; */
 
-                    ReviewT.Review r = new ReviewT.Review(subject, tutor, rating, comment);
-                    // tableFrame.addReview(r);
-
-                 /*
-                  System.out.println("Subject:" + " " + subject);
-                    System.out.println("Tutor:" + " " + tutor);
-                    System.out.println("Rating" +" " + rating);
-                    System.out.println("Comment:" + " " + comment);
-
-                    CBOsubjects.setSelectedIndex(0);
-                    CBOtutors.setSelectedIndex(0);
-                    txtArea.setText("");
-                    setRating(0); */
+                    ReviewT.Review r = new ReviewT.Review(subjects, tutors, Rating, comments);
+              
 
                     parentApp.getTablePanel().addReview(r);
 
@@ -168,10 +200,17 @@ public class ReviewP extends JPanel {
 
 
 
+                }catch(SQLException ex){
+                        JOptionPane.showMessageDialog(null, " Error saving review: " + ex.getMessage());
+                
                 }
 
-            }
-        });
+                 }
+
+        
+                 });
+            
+
         btnShowReviews = new RoundedButton("Show Reviews", 30);
         btnShowReviews.setForeground(Color.BLACK);
 
